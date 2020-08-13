@@ -1,57 +1,52 @@
+from graph import Graph
 
 def earliest_ancestor(ancestors, starting_node):
+    # instantiate Graph
+    graph = Graph()
+    # instantiate empty list to hold the paths
+    paths = []
+    # loop through the parent, child pair (tuple) in ancestors
+    for parent, child in ancestors:
+        # if the parent is not in the graph.vertices attribute
+        if parent not in graph.vertices:
+            # add_vertex parent to graph
+            graph.add_vertex(parent)
+        # if the child is not in the graph.vertices attribute
+        if child not in graph.vertices:
+            # add_vertex parent to graph
+            graph.add_vertex(child)
+        # add_edge connecting parent and child in the graph
+        graph.add_edge(parent, child)
 
-    # set up family tree
-    lookup = {}
-    # ancestors contains a list of tuple pairs -> (parent, child)
-    for pair in ancestors:
-        parent = pair[0]
-        child = pair[1]
-        if child not in lookup:
-            lookup[child] = [parent]
-        else:
-            lookup[child].append(parent)
-        print(f"Lookup: {lookup}")
+    # loop through the vertices in the vertices attribute
+    for vertex in graph.vertices:
+        # set the path equal to the DFS of the vertex and starting_node
+        path = graph.dfs(vertex, starting_node)
+        # if the path exists
+        if path:
+            # append it to the paths empty list
+            paths.append(path)
 
-    # DFT recurse through the nodes to get to the last generation
-    def recurse(graph, vertex):
-        # endpoints: nowhere left to go
-        print(f"Vertex: {vertex}")
-        if vertex not in graph:
-            return (1, vertex)
-        # work: do nothing
-        # recurse: get ancestors thru recursing
-        ancestors = []
-        for val in graph[vertex]:
-            ancestors.append(recurse(graph, val))
-        print(f"Ancestors: {ancestors}")
-
-        # get oldest ancestor otherwise smallest ID, pass it on
-
-        # only one ancestor
-        if len(ancestors) == 1:
-            return (ancestors[0][0] + 1, ancestors[0][1])
-            
-        # two ancestors, compare them
-        if ancestors[0][0] > ancestors[1][0]:
-            return (ancestors[0][0] + 1, ancestors[0][1])
-        elif ancestors[0][0] < ancestors[1][0]:
-            return (ancestors[1][0] + 1, ancestors[1][1])
-        else:
-            # same age, return lowest ID
-            if ancestors[0][1] < ancestors[1][1]:
-                return (ancestors[0][0] + 1, ancestors[0][1])
-            else:
-                return (ancestors[1][0] + 1, ancestors[1][1])
-
-    # get earliest ancestor and deal with cases where
-    # the one picked is the earliest ancestor
-    earliest = recurse(lookup, starting_node)
-    if earliest[0] == 1:
+    # if length of path is 1 the vertex has no ancestor in the graph
+    if len(paths) == 1:
+        # so return -1
         return -1
+    # else (otherwise), there are ancestors
     else:
-        return earliest[1]
+        # first_path variable as the 0 index in paths
+        first_path = paths[0]
+        # for a path in paths, loop through them
+        for path in paths:
+            # if the len of the specified path is greater than the len of the
+            # first_path
+            if len(path) > len(first_path):
+                # replace, save over the first_path with the specified path
+                first_path = path
+        # return the first_path at the 0 index
+        return first_path[0]
 
-if __name__ == "__main__":
-    test_ancestors = [(1, 3), (2, 3), (3, 6), (5, 6), (5, 7), (4, 5), (4, 8), (8, 9), (11, 8), (10, 1)]
-    earliest_ancestor(test_ancestors, 6)
+
+## CHECK:
+test_ancestors = [(1, 3), (2, 3), (3, 6), (5, 6), (5, 7), (4, 5), (4, 8), 
+                  (8, 9), (11, 8), (10, 1)]
+earliest_ancestor(test_ancestors, 1)
